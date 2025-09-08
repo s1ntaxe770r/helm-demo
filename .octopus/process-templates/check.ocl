@@ -6,7 +6,7 @@ scope {
         package checkformanualintervention 
         default evaluate := false
         evaluate := true if {
-            input.Environment.Name == "D"
+            input.Environment.Name == "Development"
             input.Project.Name == "ACME"
             input.Space.Name == "Default"
         }

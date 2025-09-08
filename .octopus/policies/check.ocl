@@ -3,7 +3,7 @@ description = "This Policy checks that a manual intervention step isn't skipped 
 
 scope {
     rego = <<-EOT
-        package checkformanualintervention 
+        package check
         default evaluate := false
         evaluate := true if {
             input.Environment.Name == "Development"
@@ -15,8 +15,7 @@ scope {
 
 conditions {
     rego = <<-EOT
-        package checkformanualintervention
-        default result := {"allowed": false}
+        package check        default result := {"allowed": false}
         result := {"allowed": true} if {
             some step in input.Steps
             step.ActionType == "Octopus.Manual"

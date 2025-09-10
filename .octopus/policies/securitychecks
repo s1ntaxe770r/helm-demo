@@ -1,6 +1,6 @@
 scope {
     rego = <<-EOT
-        package checkformanualintervention 
+        package securitychecks 
         default evaluate := false
         evaluate := true if {
             input.Environment.Name == "Development"
@@ -12,7 +12,7 @@ scope {
 
 conditions {
     rego = <<-EOT
-        package checkformanualintervention
+        package securitychecks
         default result := {"allowed": false}
         result := {"allowed": true} if {
             some step in input.Steps

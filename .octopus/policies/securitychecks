@@ -1,41 +1,69 @@
 name = "Security Checks are required"
 description = "Require Security Checks"
-ViolationReason = "Security Checks V6 must be first step"
-
+ViolationReason = "Security Checks V6 must be first step or use security-checks template"
 scope {
-	rego = <<-EOT
-		package securitychecks
-
-		default evaluate := false
-
-		evaluate := true if { 
-			startswith(input.Space.Name, "Policies")
-			input.Project.Name == "Custom"
-			not input.Environment.Name == "Development"
-		}
-	EOT
+    rego = <<-EOT
+        package securitychecks
+        default evaluate := false
+        evaluate := true if { 
+            startswith(input.Space.Name, "Policies")
+            input.Project.Name == "Custom"
+            not input.Environment.Name == "Development"
+        }
+    EOT
 }
-
 conditions {
-	rego = <<-EOT
-		package securitychecks
-
+    rego = <<-EOT
+        package securitychecks
         default result := {"allowed": false }
-
+        
         # Minimum required version
         min_version := "6.0.0"
-
+        
+        # Allow if first step is security-checks process template with correct version
         result := {"allowed": true} if {
-			input.Steps[0].Source.Type == "Process Template"
-			input.Steps[0].Source.SlugOrId == "security-checks"
-			semver.compare(input.Steps[0].Source.Version, min_version) >= 0
-			not process_template_skipped
+            input.Steps[0].Source.Type == "Process Template"
+            input.Steps[0].Source.SlugOrId == "security-checks"
+            semver.compare(input.Steps[0].Source.Version, min_version) >= 0
+            not process_template_skipped
         }
-
-		process_template_skipped if {
-			input.Steps[0].Id in input.SkippedSteps
-			input.Steps[0].Source.Type == "Process Template"
-			input.Steps[0].Source.SlugOrId == "security-checks"
-		}
-	EOT
+        
+        # Allow if there's a security check step (manual step type)
+        result := {"allowed": true} if {
+            has_security_check_step
+            not security_check_step_skipped
+        }
+        
+        # Deny if process template is skipped
+        result := {"allowed": false, "reason": "Security checks process template cannot be skipped"} if {
+            process_template_skipped
+        }
+        
+        # Deny if security check step is skipped
+        result := {"allowed": false, "reason": "Security check step cannot be skipped"} if {
+            security_check_step_skipped
+        }
+        
+        # Check if process template is skipped
+        process_template_skipped if {
+            input.Steps[0].Id in input.SkippedSteps
+            input.Steps[0].Source.Type == "Process Template"
+            input.Steps[0].Source.SlugOrId == "security-checks"
+        }
+        
+        # Check if there's a security check step
+        has_security_check_step if {
+            some step in input.Steps
+            contains(lower(step.Name), "security")
+            step.ActionType in ["Octopus.Script", "Octopus.Manual", "Octopus.TentaclePackage"]
+        }
+        
+        # Check if security check step is skipped
+        security_check_step_skipped if {
+            some step in input.Steps
+            step.Id in input.SkippedSteps
+            contains(lower(step.Name), "security")
+            step.ActionType in ["Octopus.Script", "Octopus.Manual", "Octopus.TentaclePackage"]
+        }
+    EOT
 }

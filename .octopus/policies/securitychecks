@@ -1,0 +1,41 @@
+name = "Security Checks are required"
+description = "Require Security Checks"
+ViolationReason = "Security Checks V6 must be first step"
+
+scope {
+	rego = <<-EOT
+		package securitychecks
+
+		default evaluate := false
+
+		evaluate := true if { 
+			startswith(input.Space.Name, "Policies")
+			input.Project.Name == "Reporting Database"
+			not input.Environment.Name == "Production"
+		}
+	EOT
+}
+
+conditions {
+	rego = <<-EOT
+		package securitychecks
+
+        default result := {"allowed": false }
+
+        # Minimum required version
+        min_version := "6.0.0"
+
+        result := {"allowed": true} if {
+			input.Steps[0].Source.Type == "Process Template"
+			input.Steps[0].Source.SlugOrId == "security-checks"
+			semver.compare(input.Steps[0].Source.Version, min_version) >= 0
+			not process_template_skipped
+        }
+
+		process_template_skipped if {
+			input.Steps[0].Id in input.SkippedSteps
+			input.Steps[0].Source.Type == "Process Template"
+			input.Steps[0].Source.SlugOrId == "security-checks"
+		}
+	EOT
+}

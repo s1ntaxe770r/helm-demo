@@ -1,3 +1,7 @@
+name = "Use correct process tgemplates"
+description = "enforce"
+
+
 scope {
     rego = <<-EOT
         package securitychecks 

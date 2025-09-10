@@ -10,8 +10,8 @@ scope {
 
 		evaluate := true if { 
 			startswith(input.Space.Name, "Policies")
-			input.Project.Name == "Reporting Database"
-			not input.Environment.Name == "Production"
+			input.Project.Name == "Custom"
+			not input.Environment.Name == "Development"
 		}
 	EOT
 }

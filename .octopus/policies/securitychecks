@@ -8,7 +8,7 @@ scope {
         default evaluate := false
         evaluate := true if {
             input.Environment.Name == "Development"
-            input.Project.Name == "Custom"
+            input.Project.Name == "Invoicer"
         }
     EOT
 }

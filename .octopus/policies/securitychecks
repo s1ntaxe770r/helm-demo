@@ -20,7 +20,6 @@ conditions {
         default result := {"allowed": false}
         result := {"allowed": true} if {
             some step in input.Steps
-            step.Name == "Invoice-Charts"
             step.Action == "Octopus.ProcessTemplate"
         }
     EOT

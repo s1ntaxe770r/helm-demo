@@ -1,0 +1,9 @@
+process_template "run-a-process-template" {
+    name = "Run a Process Template"
+    process_template_slug = "helm-releases"
+    version_mask = "3.X"
+
+    parameter "custom-clusters" {
+        value = "custom-clusters"
+    }
+}

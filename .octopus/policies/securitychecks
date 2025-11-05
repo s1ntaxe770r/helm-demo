@@ -20,7 +20,7 @@ conditions {
         default result := {"allowed": false}
         result := {"allowed": true} if {
             some step in input.Steps
-            step.Action == "Octopus.ProcessTemplate"
+             step.Source.Type == "Process Template"
         }
     EOT
 }
